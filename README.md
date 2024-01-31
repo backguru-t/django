@@ -164,4 +164,61 @@ Running migrations:
 
 결론적으로 migrate는 장고 프로젝트 생성 시 자동으로 만들어진 앱들에 대한 DB 테이블을 생성하는 것을 의미한다.
 
-## 모델 작성하기
+만약, 새로 생성한 app의 DB 테이블을 생성할 경우에는 `config/setting.py`의 `INSTALLED_APPS` 에 아래 코드와 같이 삽입을 해 주어야 한다.
+```python
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+```
+
+예를 들어, intro app을 생성 시 자동으로 만들어지는 `intro/app.py`의 `intro.apps.IntroConfig`를 추가해 주면 된다.
+그리고, 새로 추가된 app을 인식 시켜 주기 위해 `python manage.py makemigrations`를 먼저 실행 후 `python manage.py migrate`를 다시 실행한다.
+
+
+## 모델과 뷰
+장고에서 모델(Model)은 데이터베이스와 상호 작용하고 데이터를 정의하는데 사용되는 부분이다. 장고에서 모델은 데이터베이스의 테이블과 1:1로 매핑되는데, 이를 통해 데이터의 구조를 정의하고 데이터베이스와의 상호 작용을 쉽게 할 수 있다. 예를 들어, 학생 정보를 저장하는 모델을 만들면 다음과 같다.
+
+```python
+# models.py
+
+from django.db import models
+
+class Student(models.Model):
+    student_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    major = models.CharField(max_length=255)
+```
+모델을 정의한 후에는 이를 데이터베이스에 반영하기 위해 장고의 migrate 명령을 사용한다.
+뷰(View)는 사용자의 요청을 처리하고 데이터를 반환하는 부분이다. 뷰는 웹 애플리케이션의 비즈니스 로직을 담당하며, 모델로부터 데이터를 가져와 템플릿에 전달한다.
+
+```python
+# views.py
+
+from django.shortcuts import render
+from .models import Student
+
+def student_list(request):
+    students = Student.objects.all()
+    return render(request, 'students/student_list.html', {'students': students})
+```
+
+위의 코드와 같이 뷰는 요청을 받아 처리하고, 모델로부터 데이터를 가져와 템플릿에 전달하는 역할을 한다.
+템플릿(Template)은 HTML 코드와 함께 동적으로 데이터를 표시하기 위한 장고의 도구이다. 뷰에서 전달받은 데이터를 템플릿에서 사용하여 웹 페이지를 동적으로 생성할 수 있다.
+
+```python
+<!-- student_list.html -->
+
+<ul>
+  {% for student in students %}
+    <li>{{ student.name }} - {{ student.major }}</li>
+  {% endfor %}
+</ul>
+```
+이러한 구성 요소들이 함께 작동하여 장고 애플리케이션은 모델에서 데이터를 관리하고, 뷰에서 비즈니스 로직을 처리하며, 템플릿에서 데이터를 동적으로 표시할 수 있도록 한다.
