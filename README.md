@@ -7,6 +7,7 @@
 - [View와 URL 맵핑](#view와-url-맵핑)
 - [App migration](#app-migration)
 - [모델과 뷰](#모델과-뷰)
+- [장고 어드민](#장고-어드민)
 
 ## 개발 환경 설정
 ### 파이썬 가상 환경 생성
@@ -222,3 +223,23 @@ def student_list(request):
 </ul>
 ```
 이러한 구성 요소들이 함께 작동하여 장고 애플리케이션은 모델에서 데이터를 관리하고, 뷰에서 비즈니스 로직을 처리하며, 템플릿에서 데이터를 동적으로 표시할 수 있도록 한다.
+
+## 장고 어드민
+장고에서 기본적으로 제공하는 어드민 페이지를 이용할 수 있다. 우선 `python manage.py createsuperuser`를 입력하여 슈퍼유저를 생성한다. 아래는 사용자 이름 `admin`, 이메일 주소는 `backing.dev@gmail.com`, 비밀번호 `1234` 로 설정하는 화면이다.
+
+```bash
+(venv) D:\work\backguru\django\projects\mysite>python manage.py createsuperuser
+Username (leave blank to use 'tonyc'): admin
+Email address: backing.dev@gmail.com
+Password: 
+Password (again): 
+This password is too short. It must contain at least 8 characters.
+This password is too common.
+This password is entirely numeric.
+Bypass password validation and create user anyway? [y/N]: y
+Superuser created successfully.
+```
+이제 `python manage.py runserver` 입력하여 내장 서버를 실행 시킨 후 `http://localhost:8000/admin` 으로 진입하여 앞서 설정한 계정 정보를 입력하면 아래와 같은 화면에 진입한다.
+
+![img](images/admin.png)
+
