@@ -8,6 +8,8 @@
 - [App migration](#app-migration)
 - [모델과 뷰](#모델과-뷰)
 - [장고 어드민](#장고-어드민)
+- [AWS 인스턴스 생성](#aws-인스턴스-생성)
+- [AWS 서버 설정 및 장고 서비스 실행](#aws-서버-설정-및-장고-서비스-실행)
 
 ## 개발 환경 설정
 ### 파이썬 가상 환경 생성
@@ -25,7 +27,11 @@ VSCODE를 사용하는 경우에는 다음과 같이 python interpreter를 선�
 ![img](images/vsc-terminal.png)
 
 ### 장고 설치
-앞으로 모든 작업은 위에서 생성한 가상 환경에서 수행한다는 것을 잊지 말자. 장고는 `pip install django` 명령으로 설치 한다.
+앞으로 모든 작업은 위에서 생성한 가상 환경에서 수행한다는 것을 잊지 말자. 장고는 `pip install django` 명령으로 설치 한다. 버전은 다음과 같이 확인 가능하다.
+
+```bash
+python -m django --version
+```
 
 ## 장고 프로젝트 생성
 프로젝트 폴더에 아래 명령으로 장고 프로젝트를 셋업 할 수 있다.
@@ -243,3 +249,113 @@ Superuser created successfully.
 
 ![img](images/admin.png)
 
+
+## AWS 인스턴스 생성
+AWS lightsail에서 인스턴스를 생성하고 장고 웹서비스를 배포해 본다. [여기](https://lightsail.aws.amazon.com/ls/webapp/home/instances)에 접속하여 인스턴스를 생성할 수 있다.
+
+![img](images/aws-instance.png)
+
+`create instance` 버튼을 클릭하여 다음 화면같이 Linux/ubuntu를 선택한다.
+
+![img](images/aws-os.png)
+
+이제 가격정책을 선택한다. 3개월은 무료로 사용할 수 있다. 
+
+![img](images/aws-plan.png)
+
+이제 `인스턴스생성` 버튼을 클릭하여 인스턴스 생성을 시작하여 잠시후 아래와 같이 인스턴스 생성이 완료되는 것을 확인할 수 있다.
+
+![img](images/aws-complete.png)
+
+위의 화면에서 인스턴스 이름(backguru-t)를 클릭하여 아래와 같은 화면에 진입할 수 있다.
+
+![img](images/aws-connect.png)
+
+해당 화면에서 생성한 우분투 서버에 연결 할 수 있는 IP주소 정보를 볼 수 있다. 만약 특정 SSH 클라이언트 (예: MobaXterm) 를 이용해서 SSH 접속하기 위해서는 SSH Key를 생성해야 한다. SSH Key를 생성하기 위해서는 해당 화면을 참고한다. SSH 접속이 된다면 생성이 성공적으로 완료된 것이다.
+
+*추가적으로 public IP를 만들고 방화벽 규칙을 생성하여 외부에서 접근 가능한 장고 서버 서비스를 실행할 수 있도록 한다. 만약, 장고 서비스가 8000포트에서 수행된다면 8000포트를 개방해줘야 한다.*
+
+## AWS 서버 설정 및 장고 서비스 실행
+앞서 생성한 우분투 서버에 SSH로 접속을 하여 호스트 네임을 변경해 준다. 예를 들어, 아래와 같이 backguru로 변경을 하자.
+
+```shell
+sudo hostnamectl set-hostname backguru
+```
+
+그리고 서버를 재시작한다.
+
+```shell
+sudo reboot
+```
+
+재접속하여 변경된 프롬프트를 확인할 수 있다. 그리고 아래의 명령으로 호스트네임을 확인 할 수 있다.
+
+```shell
+hostname
+```
+이제 우분투서버에 가상환경을 사용할 수 있도록 python3-venv를 설치한다. 먼저 아래 명령으로 우분투 패키지를 최신으로 업데이트 한다.
+
+```shell
+sudo apt update
+
+```
+
+아래의 명령으로 가상환경을 설치한다. 질문이 나오면 무조선 `enter`클릭한다.
+```shell
+sudo apt install python3-venv
+```
+홈 디렉토리에 장고 프로젝트 디렉토리와 venv 디렉토리를 생성한 후 venv 폴더에서 아래 명령으로 가상환경을 설정한다.
+
+```shell
+python3 -m venv <project-name>
+```
+위와 같이 폴더 구조를 설정할 경우 프로젝트 마다 다른 가상환경이 필요할 때 마다 venv 하위에 해당 프로젝트 이름으로 가상환경을 설치 할 수 있다. 이제 venv/<project-name>/bin 하위에 있는 activate 스크립트를 실행한다.
+
+```shell
+. activate
+```
+또는
+```shell
+source activate
+```
+
+이제 쉘 프롬프트 맨 앞에 (<project-name>)가 표시되는 것을 볼 수 있다. 예를 들어 다음과 같다.
+
+```shell
+ubuntu@backguru:~/venvs$ cd mysite
+ubuntu@backguru:~/venvs/mysite$ cd bin
+ubuntu@backguru:~/venvs/mysite/bin$ . activate
+(mysite) ubuntu@backguru:~/venvs/mysite/bin$
+```
+
+만약 가상 환경에서 벗어나려면 아무 곳에서나 deactivate 명령을 수행하면 된다. 이제 django와 markdown을 설치한다.
+
+```shell
+pip install wheel
+pip install django==4.2.9
+pip install markdown 
+```
+이제 *~/projects* 디렉토리에 장고 서버 소스를 저장한다. 그리고, 로컬에서 서버를 구동하던 방식과 동일하게 수행할 수 있으나, `config/setting.py`에서 아래와 같이 ALLOWED_HOSTS에 앞서 설정한 고정IP를 입력해 주어야 한다.
+
+```python
+ALLOWED_HOSTS = ['<고정-IP']
+
+
+# Application definition
+
+INSTALLED_APPS = [
+    'common.apps.CommonConfig',
+    'pybo.apps.PyboConfig',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+```
+그리고 마지막으로 아래 명령으로 서버에 서비스를 실행한다.
+
+```shell
+python manage.py runserver 0:8000
+```
